@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(Remoter)
 
-# Enable MASM immediately after project
+# Enable MASM immediately after the project
 enable_language(ASM_MASM)
 
 set(CMAKE_CXX_STANDARD 17)
