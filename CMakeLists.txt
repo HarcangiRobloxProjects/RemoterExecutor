@@ -22,7 +22,7 @@ if(MSVC)
     endforeach()
 endif()
 
-# ---- Zlib (kept for compatibility) ----
+# ---- Zlib ----
 include(FetchContent)
 FetchContent_Declare(
     zlib
@@ -30,6 +30,9 @@ FetchContent_Declare(
     GIT_TAG v1.3.1
 )
 set(ZLIB_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+# Force zlib to be static
+set(SKIP_INSTALL_ALL ON CACHE BOOL "" FORCE)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(zlib)
 
 # ---- ZSTD (for RSB1 bytecode encoding) ----
@@ -99,7 +102,6 @@ file(GLOB CORE_SOURCES
 # Force MASM for the syscall file
 set_source_files_properties("src/syscalls.asm" PROPERTIES LANGUAGE ASM_MASM)
 
-
 # Include directories
 include_directories(src)
 
@@ -112,7 +114,7 @@ set_target_properties(Remoter PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(Remoter PRIVATE 
     kernel32 user32 winhttp ws2_32
     Luau.Compiler Luau.Ast
-    zlibstatic
+    zlib
     libzstd_static
     blake3
     httplib::httplib
