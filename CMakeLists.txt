@@ -22,19 +22,6 @@ if(MSVC)
     endforeach()
 endif()
 
-# ---- Zlib ----
-include(FetchContent)
-FetchContent_Declare(
-    zlib
-    GIT_REPOSITORY https://github.com/madler/zlib.git
-    GIT_TAG v1.3.1
-)
-set(ZLIB_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-# Force zlib to be static
-set(SKIP_INSTALL_ALL ON CACHE BOOL "" FORCE)
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(zlib)
-
 # ---- ZSTD (for RSB1 bytecode encoding) ----
 FetchContent_Declare(
     zstd
@@ -114,7 +101,6 @@ set_target_properties(Remoter PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(Remoter PRIVATE 
     kernel32 user32 winhttp ws2_32
     Luau.Compiler Luau.Ast
-    zlibstatic
     libzstd_static
     blake3
     httplib::httplib
@@ -126,8 +112,6 @@ target_include_directories(Remoter PRIVATE
     ${luau_SOURCE_DIR}/Compiler/include
     ${luau_SOURCE_DIR}/Ast/include
     ${luau_SOURCE_DIR}/Common/include
-    ${zlib_SOURCE_DIR}
-    ${zlib_BINARY_DIR}
     ${zstd_SOURCE_DIR}/lib
     ${zstd_SOURCE_DIR}/lib/common
     ${blake3_SOURCE_DIR}/c
