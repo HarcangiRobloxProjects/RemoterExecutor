@@ -1,4 +1,4 @@
-name: Build Remoter Executor
+name: Remoter Executor Beta
 
 on:
   push:
@@ -13,7 +13,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -G "Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=Release
+      run: cmake -B ${{github.workspace}}/build -G "Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=Release .
 
     - name: Build C++ Core
       run: cmake --build ${{github.workspace}}/build --config Release
@@ -33,7 +33,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '10.0.x'
+        dotnet-version: '9.0.x'
 
     - name: Download Core DLL
       uses: actions/download-artifact@v4
