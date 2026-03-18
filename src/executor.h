@@ -284,21 +284,21 @@ function Remoter.gethui()
 end
 
 -- Install into genv
-genv.loadstring = Syntax.loadstring
-genv.request = Syntax.request
-genv.http_request = Syntax.request
-genv.http = { request = Syntax.request }
-genv.HttpGet = Syntax.httpget
-genv.httpget = Syntax.httpget
-genv.getgenv = Syntax.getgenv
-genv.getrenv = Syntax.getrenv
-genv.identifyexecutor = Syntax.identifyexecutor
-genv.getexecutorname = Syntax.getexecutorname
-genv.getidentity = Syntax.getidentity
-genv.getthreadidentity = Syntax.getthreadidentity
-genv.setthreadidentity = Syntax.setthreadidentity
-genv.getthreadcontext = Syntax.getthreadcontext
-genv.gethui = Syntax.gethui
+genv.loadstring = Remoter.loadstring
+genv.request = Remoter.request
+genv.http_request = Remoter.request
+genv.http = { request = Remoter.request }
+genv.HttpGet = Remoter.httpget
+genv.httpget = Remoter.httpget
+genv.getgenv = Remoter.getgenv
+genv.getrenv = Remoter.getrenv
+genv.identifyexecutor = Remoter.identifyexecutor
+genv.getexecutorname = Remoter.getexecutorname
+genv.getidentity = Remoter.getidentity
+genv.getthreadidentity = Remoter.getthreadidentity
+genv.setthreadidentity = Remoter.setthreadidentity
+genv.getthreadcontext = Remoter.getthreadcontext
+genv.gethui = Remoter.gethui
 
 -- Ensure raw metatable access is unlocked for sandbox interactions
 pcall(function() setreadonly(getrawmetatable(game), false) end)
@@ -617,7 +617,7 @@ private:
         // 3. Trigger the script via menu simulation
         SimulateEscKey();  // Open menu — triggers require of our module
         
-        std::cout << "[INJECT-" << label << "] Waiting for init signal (Syntax folder in CoreGui)...\n";
+        std::cout << "[INJECT-" << label << "] Waiting for init signal (Remoter folder in CoreGui)...\n";
         bool signaled = false;
         for (int i = 0; i < 40; i++) { // Max 4 seconds (40 * 100ms)
             if (sCachedCoreGui && rblx::FindChildByName(hProcess, sCachedCoreGui, "Remoter")) {
