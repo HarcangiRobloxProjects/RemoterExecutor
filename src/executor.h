@@ -14,6 +14,7 @@
 #include "offsets.h"
 #include "luau_wrapper.h"
 #include "http_server.h"
+#include "instance_utils.h"
 #include "unc_payload.h"
 
 class ScriptExecutor {
@@ -65,7 +66,7 @@ local HttpService = game:FindService("HttpService")
 local CoreGui = game:GetService("CoreGui")
 
 local SERVER = "http://127.0.0.1:9753"
-local EXEC_NAME = "Syntax"
+local EXEC_NAME = "Remoter"
 
 -- Clean up previous session if any
 local existing = CoreGui:FindFirstChild(EXEC_NAME)
@@ -119,9 +120,9 @@ end
 
 -- Environment globals
 local genv = {}
-local Syntax = {}
+local Remoter = {}
 
-function Syntax.loadstring(content, chunkName)
+function Remoter.loadstring(content, chunkName)
     if type(content) ~= "string" then return nil, "invalid argument #1 to 'loadstring'" end
     if content:sub(1,1) == "\0" or content:sub(1,1) == "\27" then return nil, "bytecode not supported" end
     
@@ -201,14 +202,14 @@ function Syntax.loadstring(content, chunkName)
     end
 end
 
-function Syntax.request(options)
+function Remoter.request(options)
     assert(type(options) == "table", "invalid argument #1 to 'request'")
     assert(type(options.Url) == "string", "invalid option 'Url'")
     options.Method = options.Method or "GET"
 
     local reqHeaders = options.Headers or {}
     if not reqHeaders["User-Agent"] and not reqHeaders["user-agent"] then
-        reqHeaders["User-Agent"] = "Syntax"
+        reqHeaders["User-Agent"] = "Remoter"
     end
 
     local result = SendRequest({
@@ -238,9 +239,9 @@ function Syntax.request(options)
     }
 end
 
-function Syntax.httpget(url)
+function Remoter.httpget(url)
     assert(type(url) == "string", "invalid argument #1 to 'HttpGet'")
-    local resp = Syntax.request({Url = url, Method = "GET"})
+    local resp = Remoter.request({Url = url, Method = "GET"})
     if not resp.Success then
         warn("[HttpGet] Error fetching " .. url .. " (Status: " .. tostring(resp.StatusCode) .. ")")
         warn("[HttpGet] Body: " .. tostring(resp.Body))
@@ -249,22 +250,22 @@ function Syntax.httpget(url)
     return resp.Body
 end
 
-function Syntax.getgenv() return genv end
-function Syntax.getrenv() return getfenv(0) end
-function Syntax.identifyexecutor() return "Syntax", "1.0.0" end
-function Syntax.getexecutorname() return "Syntax" end
+function Remoter.getgenv() return genv end
+function Remoter.getrenv() return getfenv(0) end
+function Remoter.identifyexecutor() return "Remoter", "1.0.0" end
+function Remoter.getexecutorname() return "Remoter" end
 
 -- Identity functions (return true identity 8 now that we are natively 8!)
-function Syntax.getidentity() return 8 end
-function Syntax.getthreadidentity() return 8 end
-function Syntax.setthreadidentity(n) end
-function Syntax.getthreadcontext() return 8 end
+function Remoter.getidentity() return 8 end
+function Remoter.getthreadidentity() return 8 end
+function Remoter.setthreadidentity(n) end
+function Remoter.getthreadcontext() return 8 end
 
 -- Global gethui container
 local huiContainer = nil
 
 -- We return a REAL Folder instance named "CoreGui" to prevent "Instance expected, got table" errors
-function Syntax.gethui()
+function Remoter.gethui()
     if not huiContainer or not huiContainer.Parent then
         pcall(function()
             huiContainer = Instance.new("Folder")
@@ -308,12 +309,12 @@ local realGetService = realGame.GetService
 local gameProxy = setmetatable({}, {
     __index = function(_, k)
         if k == "HttpGet" or k == "httpget" then
-            return function(_, url) return Syntax.httpget(url) end
+            return function(_, url) return Remoter.httpget(url) end
         end
-        if k == "CoreGui" then return Syntax.gethui() end
+        if k == "CoreGui" then return Remoter.gethui() end
         if k == "GetService" or k == "getService" then
             return function(self, service)
-                if service == "CoreGui" then return Syntax.gethui() end
+                if service == "CoreGui" then return Remoter.gethui() end
                 return realGetService(realGame, service)
             end
         end
@@ -346,7 +347,7 @@ genv.script = nil
 
 -- Store in shared
 shared._rblx_genv = genv
-shared._rblx_Null = Syntax
+shared._rblx_Null = Remoter
 shared._rblx_http = SendRequest
 shared._rblx_game_proxy = gameProxy
 
@@ -380,7 +381,7 @@ while task.wait(0.1) do
 
         if result and result.Success and result.StatusCode == 200 and result.Body and #result.Body > 0 then
             print("[EXEC] Got script (" .. #result.Body .. " bytes), compiling...")
-            local fn, loadErr = Syntax.loadstring(result.Body)
+            local fn, loadErr = Remoter.loadstring(result.Body)
             if fn then
                 pcall(function() setfenv(fn, genv) end) -- ENFORCE SANDBOX ENVIRONMENT!
                 task.spawn(fn)
@@ -429,7 +430,7 @@ public:
         // Phase 1: First execution — inject init script via SpoofWith
         if (!sInjected) {
             // Check for existing session recovery
-            if (sCachedCoreGui && rblx::GetInstanceByName(hProcess, sCachedCoreGui, "Remoter")) {
+            if (sCachedCoreGui && rblx::FindChildByName(hProcess, sCachedCoreGui, "Remoter")) {
                 std::cout << "[INJECT] Confirmation signal 'Remoter' folder found in CoreGui!\n";
                 std::cout << "[EXEC] Existing Remoter session found in CoreGui — recovering...\n";
                 sInjected = true;
@@ -619,7 +620,7 @@ private:
         std::cout << "[INJECT-" << label << "] Waiting for init signal (Syntax folder in CoreGui)...\n";
         bool signaled = false;
         for (int i = 0; i < 40; i++) { // Max 4 seconds (40 * 100ms)
-            if (sCachedCoreGui && rblx::FindChildByName(hProcess, sCachedCoreGui, "Syntax")) {
+            if (sCachedCoreGui && rblx::FindChildByName(hProcess, sCachedCoreGui, "Remoter")) {
                 signaled = true;
                 break;
             }
