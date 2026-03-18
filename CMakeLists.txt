@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
 project(Remoter)
 
+# Enable MASM immediately after project
+enable_language(ASM_MASM)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -96,8 +99,6 @@ file(GLOB CORE_SOURCES
 # Force MASM for the syscall file
 set_source_files_properties("src/syscalls.asm" PROPERTIES LANGUAGE ASM_MASM)
 
-# Enable MASM
-enable_language(ASM_MASM)
 
 # Include directories
 include_directories(src)
